@@ -1,0 +1,75 @@
+name: 短歌を追加する
+
+on:
+  workflow_dispatch:
+    inputs:
+      text:
+        description: '短歌'
+        required: true
+        type: string
+      date:
+        description: '詠んだ日（例：2026-03-18）　空白なら今日'
+        required: false
+        type: string
+      series:
+        description: '連作名（複数ある場合はカンマ区切り）　なければ空白'
+        required: false
+        type: string
+      kettei:
+        description: '決定'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  add-tanka:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 短歌をtanka.jsonに追記
+        env:
+          TEXT: ${{ inputs.text }}
+          DATE: ${{ inputs.date }}
+          SERIES: ${{ inputs.series }}
+          KETTEI: ${{ inputs.kettei }}
+        run: |
+          python3 - << 'EOF'
+          import json, os
+          from datetime import date
+
+          with open("tanka.json", encoding="utf-8") as f:
+              data = json.load(f)
+
+          text = os.environ["TEXT"].strip()
+          raw_date = os.environ["DATE"].strip()
+          entry_date = raw_date if raw_date else str(date.today())
+
+          raw_series = os.environ["SERIES"].strip()
+          series = [s.strip() for s in raw_series.split(",") if s.strip()] if raw_series else []
+
+          kettei = os.environ["KETTEI"].lower() == "true"
+
+          data.append({
+              "text": text,
+              "date": entry_date,
+              "series": series,
+              "kettei": kettei,
+          })
+
+          with open("tanka.json", "w", encoding="utf-8") as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+
+          print(f"追加完了: {text}")
+          EOF
+
+      - name: commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tanka.json
+          git commit -m "歌を追加: ${{ inputs.text }}"
+          git push
