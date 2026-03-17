@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>目黒なずな</title>
+<meta property="og:title" content="目黒なずな">
+<meta property="og:description" content="目黒なずな 短歌アーカイブ">
+<meta property="og:image" content="https://h4lmirn.github.io/tanka_achives/ogp.png">
+<meta property="og:url" content="https://h4lmirn.github.io/tanka_achives/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://h4lmirn.github.io/tanka_achives/ogp.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
@@ -314,7 +321,11 @@ let allTanka = [];
 let activeFilter = "all";
 
 function getSeries(t) {
-  return Array.isArray(t.series) ? t.series : [];
+  if (Array.isArray(t.series)) return t.series;
+  if (typeof t.series === 'string' && t.series.trim()) {
+    return t.series.split(",").map(s => s.trim()).filter(Boolean);
+  }
+  return [];
 }
 
 function buildPills(data) {
@@ -377,7 +388,6 @@ function render() {
       <div class="tanka-meta">
         ${dateStr ? `<span class="tanka-date">${dateStr}</span>` : ""}
         ${getSeries(t).map(s => `<span class="tanka-series">${s}</span>`).join("")}
-        ${t.kettei ? `<span class="badge-kettei">決定</span>` : ""}
         <a class="tweet-link"
            href="https://twitter.com/intent/tweet?text=${encodeURIComponent(t.text + '\n目黒なずな 短歌アーカイヴ\nhttps://h4lmirn.github.io/tanka_achives/')}"
            target="_blank" rel="noopener">ポスト</a>
