@@ -228,6 +228,20 @@
     padding: 0.15rem 0.6rem;
   }
 
+  .tweet-link {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    text-decoration: none;
+    margin-left: auto;
+    transition: color 0.2s;
+  }
+
+  .tweet-link:hover {
+    color: var(--ink);
+  }
+
   .empty {
     padding: 4rem 0;
     text-align: center;
@@ -364,6 +378,9 @@ function render() {
         ${dateStr ? `<span class="tanka-date">${dateStr}</span>` : ""}
         ${getSeries(t).map(s => `<span class="tanka-series">${s}</span>`).join("")}
         ${t.kettei ? `<span class="badge-kettei">決定</span>` : ""}
+        <a class="tweet-link"
+           href="https://twitter.com/intent/tweet?text=${encodeURIComponent(t.text + '\n目黒なずな 短歌アーカイヴ\nhttps://h4lmirn.github.io/tanka_achives/')}"
+           target="_blank" rel="noopener">ポスト</a>
       </div>`;
     list.appendChild(li);
   });
