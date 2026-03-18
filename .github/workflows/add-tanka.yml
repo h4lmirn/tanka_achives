@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 短歌をtanka.jsonに追記
+      - name: 短歌をtanka.jsonとnotesに追記
         env:
           TEXT: ${{ inputs.text }}
           DATE: ${{ inputs.date }}
@@ -47,29 +47,30 @@ jobs:
           text = os.environ["TEXT"].strip()
           raw_date = os.environ["DATE"].strip()
           entry_date = raw_date if raw_date else str(date.today())
-
           raw_series = os.environ["SERIES"].strip()
           series = [s.strip() for s in raw_series.split(",") if s.strip()] if raw_series else []
-
           kettei = os.environ["KETTEI"].lower() == "true"
 
-          data.append({
-              "text": text,
-              "date": entry_date,
-              "series": series,
-              "kettei": kettei,
-          })
+          data.append({"text": text, "date": entry_date, "series": series, "kettei": kettei})
 
           with open("tanka.json", "w", encoding="utf-8") as f:
               json.dump(data, f, ensure_ascii=False, indent=2)
 
-          print(f"追加完了: {text}")
+          os.makedirs("notes", exist_ok=True)
+          idx = len(data) - 1
+          filename = f"notes/{entry_date}_{idx:04d}.md"
+          series_yaml = ("[\n" + "\n".join(f"  - {s}" for s in series) + "\n]") if series else "[]"
+          md = f"---\ndate: {entry_date}\nseries: {series_yaml}\nkettei: {str(kettei).lower()}\n---\n\n{text}\n"
+          with open(filename, "w", encoding="utf-8") as f:
+              f.write(md)
+
+          print(f"追加: {text}  →  {filename}")
           EOF
 
       - name: commit & push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add tanka.json
+          git add tanka.json notes/
           git commit -m "歌を追加: ${{ inputs.text }}"
           git push
