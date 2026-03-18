@@ -40,6 +40,71 @@ jobs:
           python3 - << 'EOF'
           import json, os
           from datetime import date
+          from pathlib import Path
+
+          KEYWORD_DICT = {
+              "月":     ["月"],
+              "海":     ["海"],
+              "空":     ["空"],
+              "星":     ["星"],
+              "雨":     ["雨"],
+              "雪":     ["雪"],
+              "風":     ["風"],
+              "光":     ["光", "ひかる", "ひかり"],
+              "花":     ["花"],
+              "夜":     ["夜", "よる"],
+              "朝":     ["朝", "あさ"],
+              "水":     ["水", "みず"],
+              "火":     ["火", "炎", "ほのお"],
+              "雲":     ["雲"],
+              "波":     ["波"],
+              "血":     ["血"],
+              "涙":     ["涙", "なみだ"],
+              "爪":     ["爪", "つめ", "爪先", "つまさき"],
+              "髪":     ["髪"],
+              "息":     ["息", "呼吸"],
+              "手":     ["手", "指"],
+              "目":     ["目", "瞳", "まなこ"],
+              "口":     ["口", "唇", "くちびる"],
+              "骨":     ["骨", "肋骨", "あばら"],
+              "肌":     ["肌", "皮膚"],
+              "死":     ["死", "しぬ", "しんだ", "しにたい", "亡"],
+              "夢":     ["夢", "ゆめ"],
+              "愛":     ["愛"],
+              "孤独":   ["孤独", "さびしさ", "さみしさ", "ひとり", "独り"],
+              "嘘":     ["嘘", "うそ"],
+              "痛":     ["痛", "いた"],
+              "溶":     ["溶", "とけ", "とかす"],
+              "燃":     ["燃", "もえ", "もやす"],
+              "枯":     ["枯", "かれ"],
+              "落":     ["落", "おち", "おとす"],
+              "消":     ["消", "きえ", "けす"],
+              "眠":     ["眠", "ねむ"],
+              "焼":     ["焼", "やけ", "やく"],
+              "切":     ["切", "きれ", "きる"],
+              "飛":     ["飛", "とぶ", "とんで"],
+              "沈":     ["沈", "しずむ"],
+              "揺":     ["揺", "ゆれ"],
+              "滲":     ["滲", "にじ"],
+              "薬":     ["薬", "眠剤", "糖衣錠"],
+              "刃":     ["刃", "剃刀", "包丁"],
+              "鏡":     ["鏡"],
+              "針":     ["針", "まち針"],
+              "糸":     ["糸"],
+              "布":     ["布団", "シーツ", "枕", "綿"],
+              "煙草":   ["煙草", "タバコ", "たばこ", "ニコチン"],
+              "ガラス": ["ガラス", "硝子"],
+              "紙":     ["紙", "便箋", "書簡"],
+          }
+
+          def extract_tags(text):
+              tags = []
+              for tag, patterns in KEYWORD_DICT.items():
+                  for p in patterns:
+                      if p in text:
+                          tags.append(tag)
+                          break
+              return tags
 
           with open("tanka.json", encoding="utf-8") as f:
               data = json.load(f)
@@ -50,21 +115,25 @@ jobs:
           raw_series = os.environ["SERIES"].strip()
           series = [s.strip() for s in raw_series.split(",") if s.strip()] if raw_series else []
           kettei = os.environ["KETTEI"].lower() == "true"
+          tags = extract_tags(text)
 
           data.append({"text": text, "date": entry_date, "series": series, "kettei": kettei})
 
           with open("tanka.json", "w", encoding="utf-8") as f:
               json.dump(data, f, ensure_ascii=False, indent=2)
 
-          os.makedirs("notes", exist_ok=True)
+          Path("notes").mkdir(exist_ok=True)
           idx = len(data) - 1
           filename = f"notes/{entry_date}_{idx:04d}.md"
           series_yaml = ("[\n" + "\n".join(f"  - {s}" for s in series) + "\n]") if series else "[]"
-          md = f"---\ndate: {entry_date}\nseries: {series_yaml}\nkettei: {str(kettei).lower()}\n---\n\n{text}\n"
+          tags_yaml = ("[\n" + "\n".join(f"  - {tag}" for tag in tags) + "\n]") if tags else "[]"
+          md = f"---\ndate: {entry_date}\nseries: {series_yaml}\nkettei: {str(kettei).lower()}\ntags: {tags_yaml}\n---\n\n{text}\n"
+
           with open(filename, "w", encoding="utf-8") as f:
               f.write(md)
 
-          print(f"追加: {text}  →  {filename}")
+          print(f"追加: {text}")
+          print(f"タグ: {tags}")
           EOF
 
       - name: commit & push
