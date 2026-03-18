@@ -1,0 +1,53 @@
+name: 初回セットアップ（tanka.json → notes/ 一括生成）
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-notes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: tanka.jsonからnotesを一括生成
+        run: |
+          python3 - << 'EOF'
+          import json, os
+          from pathlib import Path
+
+          with open("tanka.json", encoding="utf-8") as f:
+              data = json.load(f)
+
+          notes_dir = Path("notes")
+          notes_dir.mkdir(exist_ok=True)
+
+          for i, t in enumerate(data):
+              text = t.get("text", "").strip()
+              if not text:
+                  continue
+
+              date_val = t.get("date", "") or ""
+              series = t.get("series", [])
+              if isinstance(series, str):
+                  series = [s.strip() for s in series.split(",") if s.strip()]
+              kettei = t.get("kettei", False)
+
+              filename = notes_dir / f"{date_val}_{i:04d}.md"
+              series_yaml = ("[\n" + "\n".join(f"  - {s}" for s in series) + "\n]") if series else "[]"
+              md = f"---\ndate: {date_val}\nseries: {series_yaml}\nkettei: {str(kettei).lower()}\n---\n\n{text}\n"
+
+              filename.write_text(md, encoding="utf-8")
+
+          print(f"{len(data)}首のmdファイルを生成しました")
+          EOF
+
+      - name: commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add notes/
+          git commit -m "初回セットアップ: notes/ を一括生成"
+          git push
