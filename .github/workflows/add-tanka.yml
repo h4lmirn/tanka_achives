@@ -125,8 +125,8 @@ jobs:
           Path("notes").mkdir(exist_ok=True)
           idx = len(data) - 1
           filename = f"notes/{entry_date}_{idx:04d}.md"
-          series_yaml = ("[\n" + "\n".join(f"  - {s}" for s in series) + "\n]") if series else "[]"
-          tags_yaml = ("[\n" + "\n".join(f"  - {tag}" for tag in tags) + "\n]") if tags else "[]"
+          series_yaml = "[" + ", ".join(f'"{s}"' for s in series) + "]"
+          tags_yaml = "[" + ", ".join(f'"{tag}"' for tag in tags) + "]"
           md = f"---\ndate: {entry_date}\nseries: {series_yaml}\nkettei: {str(kettei).lower()}\ntags: {tags_yaml}\n---\n\n{text}\n"
 
           with open(filename, "w", encoding="utf-8") as f:
