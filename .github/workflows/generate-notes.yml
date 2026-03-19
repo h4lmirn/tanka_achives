@@ -122,5 +122,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add notes/
-          git commit -m "notes/ を再生成（キーワードタグ付き）"
+          git diff --staged --quiet || git commit -m "notes/ を再生成（キーワードタグ付き）"
           git push
