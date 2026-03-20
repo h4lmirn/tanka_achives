@@ -1,35 +1,39 @@
-# 目黒なずな 短歌アーカイブ
+# 短歌アーカイブ テンプレート
 
-目黒なずな[@72831s](https://x.com/72831s) の短歌アーカイブです。
-
-🔗 **https://h4lmirn.github.io/tanka_achives/**
+GitHubで短歌を公開し、Obsidianでローカル管理するためのテンプレートです。
+費用はゼロ、コードを書く必要はありません。
 
 ---
 
-## 構成
+## はじめかた
 
+### 1. このリポジトリをForkする
+
+右上の「Fork」ボタンを押して、自分のGitHubアカウントにコピーします。
+
+### 2. CONFIGを書き換える
+
+`index.html` を開き、ファイル上部の CONFIG を自分の情報に書き換えます。
+
+```javascript
+const CONFIG = {
+  name:    "あなたの名前",
+  xHandle: "your_handle",  // Xアカウントがなければ空欄のまま
+  siteUrl: "",              // 公開後にURLを入れてください
+};
 ```
-tanka_achives/
-├── index.html          … 公開サイト
-├── tanka.json          … 短歌データ
-├── keywords.json       … タグ用キーワード辞書
-├── ogp.png             … OGP画像
-├── LICENSE             … ライセンス
-├── .gitignore
-├── notes/              … Obsidian用 mdファイル（自動生成）
-├── themes/             … テーマHTMLファイル
-└── .github/workflows/  … GitHub Actions
-    ├── add-tanka.yml
-    ├── edit-tanka.yml
-    ├── delete-tanka.yml
-    ├── generate-notes.yml
-    ├── deploy.yml
-    └── create-templates.yml
-```
+
+### 3. GitHub Pagesを設定する
+
+Settings → Pages → Source を **「GitHub Actions」** に変更します。
+
+しばらく待つと `https://（ユーザー名）.github.io/（リポジトリ名）/` で公開されます。
+
+---
 
 ## 短歌の追加・編集・削除
 
-GitHubの [Actions](../../actions) タブから操作します。コードの編集は不要です。
+Actionsタブから操作します。コードの編集は不要です。
 
 | ワークフロー | 操作 |
 |---|---|
@@ -38,12 +42,58 @@ GitHubの [Actions](../../actions) タブから操作します。コードの編
 | 短歌を削除する | 1首を削除（誤操作防止あり） |
 | 初回セットアップ | notes/ を一括再生成 |
 
+---
+
+## Obsidianと連携する
+
+1. このリポジトリをローカルに clone する
+2. clone したフォルダを Obsidian で Vault として開く
+3. Obsidian Git プラグインをインストールして有効化する
+4. Actionsタブから「初回セットアップ」を実行する
+5. Obsidianで Pull するとすべての短歌が `.md` として届く
+
+---
+
 ## タグキーワードの編集
 
-`keywords.json` を直接編集してください。編集後は「初回セットアップ」を再実行すると全首のタグが更新されます。
+`keywords.json` を直接編集します。カテゴリごとにタグ名と検索パターンを追加できます。
+
+```json
+{
+  "自然・天体": {
+    "月": ["月"],
+    "海": ["海"]
+  }
+}
+```
+
+編集後は「初回セットアップ」を再実行すると全首のタグが更新されます。
+
+---
+
+## テーマ一覧
+
+| テーマ | 雰囲気 |
+|---|---|
+| yumekawa | ラベンダー×ピンク。やわらかいパステル |
+| bundan | 黒背景×赤アクセント。重厚な文芸誌テイスト |
+| katsuji | クリーム紙×タイプライター。活版印刷の質感 |
+| yukawa | ティール×ミント。水面の光のような透明感 |
+| yaso | 深い藍色と星空。夜想的なデザイン |
+| shumi | 白地に朱赤と落款。書の美意識 |
+| kasumi | 淡いローズ×モーヴ。春霞のような柔らかさ |
+| shiroki | 純白×グレー連番付き。モダンミニマル |
+
+テーマを変えたい場合は `themes/` フォルダの対応する HTML を `index.html` に上書きしてください。
+
+---
 
 ## ライセンス
 
-短歌（tanka.json）は © 目黒なずな All rights reserved。出典明記のうえ引用可。
+サイトコードは MIT License です。短歌のデータは各自のものとして扱われます。ライセンス表記は `LICENSE` ファイルを自分の情報に書き換えてください。
 
-サイトコード（index.html）は MIT License。
+---
+
+## 詳しいセットアップ手順
+
+→ [note記事リンクをここに入れてください]
