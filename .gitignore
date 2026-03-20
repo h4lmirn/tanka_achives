@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Obsidian
+.obsidian/workspace
+.obsidian/workspace.json
+.obsidian/cache
+
+# その他
+Thumbs.db
