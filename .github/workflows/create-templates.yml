@@ -1,0 +1,85 @@
+name: テンプレートブランチを一括生成する
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-templates:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitの設定
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: テンプレートブランチを生成
+        run: |
+          python3 - << 'EOF'
+          import subprocess, os, shutil
+          from pathlib import Path
+
+          def run(cmd, check=True):
+              print(f"$ {cmd}")
+              result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+              if result.stdout: print(result.stdout)
+              if result.stderr: print(result.stderr)
+              if check and result.returncode != 0:
+                  raise Exception(f"Command failed: {cmd}")
+              return result
+
+          themes_dir = Path("themes")
+          if not themes_dir.exists():
+              print("❌ themes/ フォルダが見つかりません。先にthemes/にHTMLファイルを配置してください。")
+              raise SystemExit(1)
+
+          # themes/ にあるHTMLファイルをテーマとして扱う
+          theme_files = sorted(themes_dir.glob("index-*.html"))
+          if not theme_files:
+              print("❌ themes/ の中に index-*.html が見つかりません。")
+              raise SystemExit(1)
+
+          print(f"見つかったテーマ: {[f.name for f in theme_files]}")
+
+          # ── template/base を作成
+          print("\n=== template/base ===")
+          run("git checkout main")
+          run("git checkout -B template/base", check=False)
+          Path("tanka.json").write_text("[]", encoding="utf-8")
+          # themes/ は含めない
+          run("git add tanka.json")
+          run('git commit -m "template: base - empty tanka.json" --allow-empty')
+          run("git push origin template/base --force")
+
+          # ── 各テーマブランチを作成
+          for theme_file in theme_files:
+              # ファイル名から "index-yumekawa.html" → "yumekawa"
+              theme_name = theme_file.stem.replace("index-", "")
+              branch = f"template/{theme_name}"
+              print(f"\n=== {branch} ===")
+
+              run("git checkout template/base")
+              run(f"git checkout -B {branch}", check=False)
+
+              # テーマのHTMLをindex.htmlとしてコピー
+              shutil.copy(theme_file, "index.html")
+              run("git add index.html")
+              run(f'git commit -m "template: {theme_name} theme" --allow-empty')
+              run(f"git push origin {branch} --force")
+
+          run("git checkout main")
+          print("\n✅ 全テンプレートブランチの生成が完了しました。")
+
+          # 作成されたブランチ一覧を表示
+          print("\n作成されたブランチ:")
+          print("  template/base")
+          for theme_file in theme_files:
+              theme_name = theme_file.stem.replace("index-", "")
+              print(f"  template/{theme_name}")
+          EOF
