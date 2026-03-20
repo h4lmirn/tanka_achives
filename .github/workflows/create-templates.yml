@@ -47,13 +47,22 @@ jobs:
 
           print(f"見つかったテーマ: {[f.name for f in theme_files]}")
 
+          # README-template.md の存在確認
+          readme_src = Path("README-template.md")
+          if not readme_src.exists():
+              print("⚠️  README-template.md が見つかりません。READMEなしで生成します。")
+              readme_src = None
+
           # ── template/base を作成
           print("\n=== template/base ===")
           run("git checkout main")
           run("git checkout -B template/base", check=False)
           Path("tanka.json").write_text("[]", encoding="utf-8")
-          # themes/ は含めない
-          run("git add tanka.json")
+          staged = "tanka.json"
+          if readme_src:
+              shutil.copy(readme_src, "README.md")
+              staged += " README.md"
+          run(f"git add {staged}")
           run('git commit -m "template: base - empty tanka.json" --allow-empty')
           run("git push origin template/base --force")
 
@@ -69,7 +78,8 @@ jobs:
 
               # テーマのHTMLをindex.htmlとしてコピー
               shutil.copy(theme_file, "index.html")
-              run("git add index.html")
+              staged = "index.html"
+              run(f"git add {staged}")
               run(f'git commit -m "template: {theme_name} theme" --allow-empty')
               run(f"git push origin {branch} --force")
 
