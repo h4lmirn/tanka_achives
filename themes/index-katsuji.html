@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短歌アーカイブ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDMincho:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:        #f4f0e8;
+  --bg2:       #ece8de;
+  --ink:       #1a1814;
+  --ink-faint: #6b6458;
+  --ghost:     #c8c0b0;
+  --accent:    #1a1814;
+  --red:       #c03020;
+  --stamp:     #1a1814;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'BIZ UDMincho', serif;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* 紙の質感ノイズ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* ── HEADER ── */
+header {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 3.5rem 2rem 1.5rem;
+  border-bottom: 3px double var(--ink);
+}
+
+.header-top {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: .5rem;
+}
+
+.header-mono {
+  font-family: 'Space Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .15em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+h1 {
+  font-family: 'BIZ UDMincho', serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: .3em;
+  line-height: 1;
+  color: var(--ink);
+  position: relative;
+  display: inline-block;
+}
+
+/* 活字プレス風のにじみ */
+h1::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: var(--red);
+  opacity: .08;
+  transform: translate(2px, 2px);
+  pointer-events: none;
+  letter-spacing: .3em;
+}
+
+.header-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: .7rem;
+  color: var(--ink-faint);
+  margin-top: .4rem;
+  letter-spacing: .08em;
+}
+
+/* ── CONTROLS ── */
+.controls {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1.2rem 2rem;
+  border-bottom: 1px solid var(--ghost);
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.search-wrap::before {
+  content: '>';
+  font-family: 'Space Mono', monospace;
+  font-size: .9rem;
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+
+.search-wrap input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--ink);
+  padding: .3rem 0;
+  font-family: 'Space Mono', monospace;
+  font-size: .78rem;
+  color: var(--ink);
+  outline: none;
+  letter-spacing: .05em;
+}
+.search-wrap input::placeholder { color: var(--ghost); }
+
+.controls-row { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; }
+
+.filter-label {
+  font-family: 'Space Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .1em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.pill {
+  font-family: 'BIZ UDMincho', serif;
+  font-size: .68rem;
+  letter-spacing: .06em;
+  padding: .18rem .7rem;
+  border: 1px solid var(--ghost);
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: all .15s;
+}
+.pill:hover { border-color: var(--ink); color: var(--ink); }
+.pill.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+.sort-wrap { margin-left: auto; display: flex; align-items: center; gap: .4rem; }
+.sort-wrap label { font-family:'Space Mono',monospace; font-size:.62rem; color:var(--ink-faint); text-transform:uppercase; }
+.sort-wrap select {
+  font-family: 'Space Mono', monospace;
+  font-size: .62rem;
+  background: var(--bg2);
+  border: 1px solid var(--ghost);
+  color: var(--ink);
+  padding: .15rem .4rem;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* ── MAIN ── */
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 2rem 6rem;
+}
+
+.count {
+  font-family: 'Space Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .12em;
+  color: var(--ink-faint);
+  text-align: right;
+  padding: 1rem 0 .3rem;
+}
+
+.tanka-list { list-style: none; }
+
+.tanka-item {
+  border-top: 1px solid var(--ghost);
+  padding: 2rem 0;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fadeUp .3s ease forwards;
+}
+
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+
+/* 行番号風の装飾 */
+.tanka-item-inner { display: grid; grid-template-columns: 2.5rem 1fr; gap: 0 .8rem; }
+
+.line-num {
+  font-family: 'Space Mono', monospace;
+  font-size: .6rem;
+  color: var(--ghost);
+  padding-top: .35rem;
+  text-align: right;
+  user-select: none;
+}
+
+.tanka-text {
+  font-size: clamp(1rem, 2.3vw, 1.2rem);
+  font-weight: 400;
+  line-height: 2.1;
+  letter-spacing: .12em;
+  color: var(--ink);
+  margin-bottom: .9rem;
+  word-break: break-all;
+}
+
+.tanka-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+
+.tanka-date {
+  font-family: 'Space Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+
+.tanka-series {
+  font-family: 'BIZ UDMincho', serif;
+  font-size: .65rem;
+  letter-spacing: .08em;
+  padding: .1rem .5rem;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+}
+
+.tweet-link {
+  font-family: 'Space Mono', monospace;
+  font-size: .58rem;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  text-decoration: none;
+  margin-left: auto;
+  transition: color .2s;
+}
+.tweet-link:hover { color: var(--red); }
+
+.empty {
+  text-align: center;
+  padding: 4rem 0;
+  font-family: 'Space Mono', monospace;
+  font-size: .75rem;
+  color: var(--ink-faint);
+  letter-spacing: .1em;
+}
+
+/* ── FOOTER ── */
+footer {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
+  border-top: 3px double var(--ink);
+  font-family: 'Space Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .1em;
+  color: var(--ghost);
+  text-align: center;
+}
+footer a {
+  color: var(--ink-faint);
+  text-decoration: none;
+  transition: color .2s;
+}
+footer a:hover { color: var(--red); }
+
+@media (max-width:600px) {
+  header,.controls,main { padding-left:1.2rem; padding-right:1.2rem; }
+  .sort-wrap { margin-left:0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <span class="header-mono">tanka archive</span>
+  </div>
+  <!-- ↓ 名前を書き換えてください。data-text も同じ名前にしてください（影の演出用） -->
+  <h1 id="siteTitle" data-text="あなたの名前">あなたの名前</h1>
+  <p class="header-sub" id="siteSub"></p>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="短歌を検索する…">
+  </div>
+  <div class="controls-row">
+    <span class="filter-label">series:</span>
+    <div id="pillContainer"></div>
+    <div class="sort-wrap">
+      <label for="sortSelect">sort</label>
+      <select id="sortSelect">
+        <option value="date-desc">新しい順</option>
+        <option value="date-asc">古い順</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="count" id="countLabel"></div>
+  <ul class="tanka-list" id="tankaList"></ul>
+</main>
+
+<!-- ↓ SNSリンクを書き換えるか、不要なら行ごと削除してください -->
+<footer>
+  <a href="https://x.com/your_handle" target="_blank" rel="noopener">@your_handle</a>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════
+// ここを書き換えてください
+const CONFIG = {
+  name:   "あなたの名前",
+  sub:    "",
+  xHandle: "your_handle",
+  siteUrl: "",
+};
+// ═══════════════════════════════════════════════
+
+const titleEl = document.getElementById('siteTitle');
+titleEl.textContent = CONFIG.name;
+titleEl.setAttribute('data-text', CONFIG.name);
+document.title = CONFIG.name;
+if (CONFIG.sub) document.getElementById('siteSub').textContent = CONFIG.sub;
+
+let allTanka = [];
+let activeFilter = "all";
+let lineCounter = 1;
+
+function getSeries(t) {
+  return Array.isArray(t.series) ? t.series : (t.series ? t.series.split(",").map(s=>s.trim()).filter(Boolean) : []);
+}
+
+function buildPills(data) {
+  const set = new Set(data.flatMap(t => getSeries(t)));
+  const c = document.getElementById('pillContainer');
+  c.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'pill' + (activeFilter==='all'?' active':'');
+  all.textContent = 'すべて';
+  all.onclick = () => { activeFilter='all'; render(); };
+  c.appendChild(all);
+  [...set].sort().forEach(s => {
+    const p = document.createElement('button');
+    p.className = 'pill' + (activeFilter===s?' active':'');
+    p.textContent = s;
+    p.onclick = () => { activeFilter=s; render(); };
+    c.appendChild(p);
+  });
+}
+
+function render() {
+  const q = document.getElementById('searchInput').value.trim();
+  const sort = document.getElementById('sortSelect').value;
+  buildPills(allTanka);
+  let filtered = allTanka.filter(t => {
+    if (activeFilter !== 'all' && !getSeries(t).includes(activeFilter)) return false;
+    if (q && !t.text.includes(q)) return false;
+    return true;
+  });
+  filtered.sort((a,b) => {
+    const da = new Date(a.date||'1900-01-01'), db = new Date(b.date||'1900-01-01');
+    return sort==='date-asc' ? da-db : db-da;
+  });
+  const list = document.getElementById('tankaList');
+  list.innerHTML = '';
+  document.getElementById('countLabel').textContent = filtered.length + ' results';
+  if (!filtered.length) { list.innerHTML = '<li class="empty">— no results found —</li>'; return; }
+  filtered.forEach((t,i) => {
+    const li = document.createElement('li');
+    li.className = 'tanka-item';
+    li.style.animationDelay = Math.min(i*35,400)+'ms';
+    const d = t.date ? t.date : '';
+    const tweetText = encodeURIComponent(t.text + '\n' + CONFIG.name + (CONFIG.siteUrl ? '\n'+CONFIG.siteUrl : ''));
+    li.innerHTML = `
+      <div class="tanka-item-inner">
+        <div class="line-num">${String(i+1).padStart(3,'0')}</div>
+        <div>
+          <div class="tanka-text">${t.text}</div>
+          <div class="tanka-meta">
+            ${d ? `<span class="tanka-date">${d}</span>` : ''}
+            ${getSeries(t).map(s=>`<span class="tanka-series">${s}</span>`).join('')}
+            <a class="tweet-link" href="https://twitter.com/intent/tweet?text=${tweetText}" target="_blank" rel="noopener">post</a>
+          </div>
+        </div>
+      </div>`;
+    list.appendChild(li);
+  });
+}
+
+fetch('tanka.json').then(r=>r.json()).then(d=>{allTanka=d;render();}).catch(()=>{
+  document.getElementById('tankaList').innerHTML='<li class="empty">— tanka.json が見つかりません —</li>';
+});
+document.getElementById('searchInput').addEventListener('input', render);
+document.getElementById('sortSelect').addEventListener('change', render);
+</script>
+</body>
+</html>

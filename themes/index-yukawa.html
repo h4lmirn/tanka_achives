@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短歌アーカイブ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500&family=DM+Sans:ital,wght@0,200;0,300;1,200&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --teal-dark:  #4aabb8;
+  --teal:       #6bc5d2;
+  --teal-light: #9edce6;
+  --mint:       #b8e8e0;
+  --ice:        #e4f3f7;
+  --fog:        #edf4f8;
+  --white:      #f8fcfd;
+  --ink:        #1d3a40;
+  --ink-faint:  #5a8a92;
+  --ghost:      #cce5ea;
+  --gold:       #c8b87a;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--white);
+  color: var(--ink);
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── 水面の光 ── */
+body::before {
+  content: '';
+  position: fixed;
+  top: -40vh;
+  left: -20vw;
+  width: 140vw;
+  height: 90vh;
+  background: radial-gradient(ellipse at 40% 50%, #6bc5d244 0%, #9edce622 40%, transparent 70%),
+              radial-gradient(ellipse at 75% 30%, #b8e8e033 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from { transform: translate(0, 0) rotate(0deg); }
+  to   { transform: translate(3vw, 2vh) rotate(1.5deg); }
+}
+
+/* ── HEADER ── */
+header {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 4rem 2.5rem 2.5rem;
+}
+
+.header-inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  border-bottom: 1px solid var(--ghost);
+  padding-bottom: 1.5rem;
+}
+
+.title-block { flex: 1; }
+
+/* yukawa tōri 風のロゴタイプ */
+h1 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 200;
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
+  letter-spacing: .12em;
+  color: var(--ink);
+  line-height: 1;
+  position: relative;
+  display: inline-block;
+}
+
+/* タイトルの最初の文字にティール幾何学アクセント */
+h1 .accent-char {
+  position: relative;
+  display: inline-block;
+}
+h1 .accent-char::before {
+  content: '';
+  position: absolute;
+  bottom: .1em;
+  left: 0;
+  width: 100%;
+  height: .6em;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--mint) 100%);
+  opacity: .25;
+  z-index: -1;
+}
+
+.header-en {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 200;
+  font-style: italic;
+  font-size: .72rem;
+  letter-spacing: .2em;
+  color: var(--teal);
+  margin-top: .5rem;
+  text-transform: lowercase;
+}
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .3rem;
+}
+
+.header-count-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .65rem;
+  letter-spacing: .15em;
+  color: var(--ink-faint);
+}
+
+.header-total {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 200;
+  font-size: 2rem;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: .05em;
+}
+
+/* ── CONTROLS ── */
+.controls {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1.2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .9rem;
+  border-bottom: 1px solid var(--ghost);
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-wrap input {
+  width: 100%;
+  background: var(--fog);
+  border: 1.5px solid transparent;
+  border-radius: .25rem;
+  padding: .5rem 1rem .5rem 2.2rem;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-weight: 300;
+  font-size: .85rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .2s, background .2s;
+  letter-spacing: .04em;
+}
+.search-wrap input:focus {
+  border-color: var(--teal-light);
+  background: var(--white);
+}
+.search-wrap input::placeholder { color: var(--ghost); }
+.search-wrap::before {
+  content: '⌕';
+  position: absolute;
+  left: .8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .9rem;
+  color: var(--teal-light);
+  pointer-events: none;
+}
+
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+}
+
+.filter-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .65rem;
+  letter-spacing: .15em;
+  color: var(--ink-faint);
+  text-transform: lowercase;
+}
+
+.pill {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-weight: 300;
+  font-size: .68rem;
+  letter-spacing: .06em;
+  padding: .2rem .75rem;
+  border: 1px solid var(--ghost);
+  background: transparent;
+  color: var(--ink-faint);
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+.pill:hover { border-color: var(--teal); color: var(--teal); }
+.pill.active {
+  background: linear-gradient(120deg, var(--teal) 0%, var(--teal-light) 100%);
+  border-color: transparent;
+  color: #fff;
+}
+
+.sort-wrap {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.sort-wrap label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .65rem;
+  letter-spacing: .12em;
+  color: var(--ink-faint);
+}
+.sort-wrap select {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-weight: 300;
+  font-size: .68rem;
+  background: var(--fog);
+  border: 1px solid var(--ghost);
+  border-radius: 2rem;
+  color: var(--ink);
+  padding: .2rem .7rem;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.sort-wrap select:focus { border-color: var(--teal); }
+
+/* ── MAIN ── */
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 2.5rem 6rem;
+}
+
+.tanka-list { list-style: none; padding-top: .5rem; }
+
+.tanka-item {
+  border-bottom: 1px solid var(--ice);
+  padding: 2rem 0;
+  display: grid;
+  grid-template-columns: 3px 1fr;
+  gap: 0 1.4rem;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fadeUp .4s ease forwards;
+  transition: background .2s;
+}
+
+/* ホバーで左ラインが光る */
+.tanka-item .line-accent {
+  background: var(--ghost);
+  border-radius: 3px;
+  transition: background .25s;
+}
+.tanka-item:hover .line-accent {
+  background: linear-gradient(to bottom, var(--teal), var(--mint));
+}
+
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+
+.tanka-body {}
+
+.tanka-text {
+  font-size: clamp(.95rem, 2.2vw, 1.15rem);
+  font-weight: 400;
+  line-height: 2.2;
+  letter-spacing: .1em;
+  color: var(--ink);
+  margin-bottom: .9rem;
+  word-break: break-all;
+}
+
+.tanka-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+
+.tanka-date {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 200;
+  font-style: italic;
+  font-size: .72rem;
+  letter-spacing: .1em;
+  color: var(--ink-faint);
+}
+
+.tanka-series {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-weight: 300;
+  font-size: .65rem;
+  letter-spacing: .08em;
+  padding: .12rem .65rem;
+  border-radius: 2rem;
+  border: 1px solid var(--teal-light);
+  color: var(--teal-dark);
+  background: #6bc5d20d;
+}
+
+.tweet-link {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 200;
+  font-size: .62rem;
+  letter-spacing: .12em;
+  color: var(--ghost);
+  text-decoration: none;
+  margin-left: auto;
+  transition: color .2s;
+  text-transform: lowercase;
+}
+.tweet-link:hover { color: var(--teal); }
+
+.empty {
+  text-align: center;
+  padding: 4rem 0;
+  font-family: 'DM Sans', sans-serif;
+  font-style: italic;
+  font-size: .85rem;
+  color: var(--ghost);
+  letter-spacing: .12em;
+}
+
+/* ── FOOTER ── */
+footer {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1.5rem 2.5rem 3rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-top: 1px solid var(--ice);
+}
+
+.footer-gem {
+  width: 6px;
+  height: 6px;
+  background: linear-gradient(135deg, var(--teal), var(--mint));
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  flex-shrink: 0;
+}
+
+footer a {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 200;
+  font-size: .68rem;
+  letter-spacing: .15em;
+  color: var(--ink-faint);
+  text-decoration: none;
+  transition: color .2s;
+}
+footer a:hover { color: var(--teal); }
+
+@media (max-width: 600px) {
+  header, .controls, main, footer { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .header-inner { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .header-right { align-items: flex-start; }
+  .sort-wrap { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="title-block">
+      <!-- ↓ 名前を書き換えてください -->
+      <h1 id="siteTitle"><span class="accent-char">あ</span>なたの名前</h1>
+      <p class="header-en" id="siteEn">tanka archive</p>
+    </div>
+    <div class="header-right">
+      <span class="header-count-label">首</span>
+      <span class="header-total" id="totalCount">—</span>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="短歌を検索する">
+  </div>
+  <div class="controls-row">
+    <span class="filter-label">series</span>
+    <div id="pillContainer"></div>
+    <div class="sort-wrap">
+      <label for="sortSelect">sort</label>
+      <select id="sortSelect">
+        <option value="date-desc">新しい順</option>
+        <option value="date-asc">古い順</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<main>
+  <ul class="tanka-list" id="tankaList"></ul>
+</main>
+
+<!-- ↓ SNSリンクを書き換えるか、不要なら行ごと削除してください -->
+<footer>
+  <div class="footer-gem"></div>
+  <a href="https://x.com/your_handle" target="_blank" rel="noopener" id="footerLink">@your_handle</a>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════
+// ここを書き換えてください
+const CONFIG = {
+  name:     "あなたの名前",
+  nameEn:   "your name",        // ローマ字表記（ヘッダーに表示）
+  xHandle:  "your_handle",
+  siteUrl:  "",
+};
+// ═══════════════════════════════════════════════
+
+// タイトル設定
+const h1 = document.getElementById('siteTitle');
+const first = CONFIG.name.charAt(0);
+const rest = CONFIG.name.slice(1);
+h1.innerHTML = `<span class="accent-char">${first}</span>${rest}`;
+document.getElementById('siteEn').textContent = CONFIG.nameEn + ' · tanka archive';
+document.title = CONFIG.name;
+document.getElementById('footerLink').textContent = '@' + CONFIG.xHandle;
+document.getElementById('footerLink').href = 'https://x.com/' + CONFIG.xHandle;
+
+let allTanka = [];
+let activeFilter = "all";
+
+function getSeries(t) {
+  return Array.isArray(t.series) ? t.series : (t.series ? t.series.split(",").map(s=>s.trim()).filter(Boolean) : []);
+}
+
+function buildPills(data) {
+  const set = new Set(data.flatMap(t => getSeries(t)));
+  const c = document.getElementById('pillContainer');
+  c.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'pill' + (activeFilter==='all'?' active':'');
+  all.textContent = 'すべて';
+  all.onclick = () => { activeFilter='all'; render(); };
+  c.appendChild(all);
+  [...set].sort().forEach(s => {
+    const p = document.createElement('button');
+    p.className = 'pill' + (activeFilter===s?' active':'');
+    p.textContent = s;
+    p.onclick = () => { activeFilter=s; render(); };
+    c.appendChild(p);
+  });
+}
+
+function render() {
+  const q = document.getElementById('searchInput').value.trim();
+  const sort = document.getElementById('sortSelect').value;
+  buildPills(allTanka);
+
+  let filtered = allTanka.filter(t => {
+    if (activeFilter !== 'all' && !getSeries(t).includes(activeFilter)) return false;
+    if (q && !t.text.includes(q)) return false;
+    return true;
+  });
+  filtered.sort((a,b) => {
+    const da = new Date(a.date||'1900-01-01'), db = new Date(b.date||'1900-01-01');
+    return sort==='date-asc' ? da-db : db-da;
+  });
+
+  const list = document.getElementById('tankaList');
+  list.innerHTML = '';
+
+  if (!filtered.length) {
+    list.innerHTML = '<li class="empty">— no results —</li>';
+    return;
+  }
+
+  filtered.forEach((t, i) => {
+    const li = document.createElement('li');
+    li.className = 'tanka-item';
+    li.style.animationDelay = Math.min(i * 30, 400) + 'ms';
+    const d = t.date ? new Date(t.date).toLocaleDateString('ja-JP', {year:'numeric', month:'long', day:'numeric'}) : '';
+    const tweetText = encodeURIComponent(t.text + '\n' + CONFIG.name + (CONFIG.siteUrl ? '\n' + CONFIG.siteUrl : ''));
+    li.innerHTML = `
+      <div class="line-accent"></div>
+      <div class="tanka-body">
+        <div class="tanka-text">${t.text}</div>
+        <div class="tanka-meta">
+          ${d ? `<span class="tanka-date">${d}</span>` : ''}
+          ${getSeries(t).map(s => `<span class="tanka-series">${s}</span>`).join('')}
+          <a class="tweet-link" href="https://twitter.com/intent/tweet?text=${tweetText}" target="_blank" rel="noopener">post</a>
+        </div>
+      </div>`;
+    list.appendChild(li);
+  });
+}
+
+fetch('tanka.json')
+  .then(r => r.json())
+  .then(data => {
+    allTanka = data;
+    document.getElementById('totalCount').textContent = data.length;
+    render();
+  })
+  .catch(() => {
+    document.getElementById('tankaList').innerHTML = '<li class="empty">— tanka.json が見つかりません —</li>';
+  });
+
+document.getElementById('searchInput').addEventListener('input', render);
+document.getElementById('sortSelect').addEventListener('change', render);
+</script>
+</body>
+</html>
