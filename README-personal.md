@@ -1,6 +1,6 @@
 # 目黒なずな 短歌アーカイブ
 
-目黒なずな（[@Ulll10ri](https://x.com/Ulll10ri) → はるさんのXに変えてください）の短歌アーカイブです。
+目黒なずな[@72831s](https://x.com/72831s) の短歌アーカイブです。
 
 🔗 **https://h4lmirn.github.io/tanka_achives/**
 
