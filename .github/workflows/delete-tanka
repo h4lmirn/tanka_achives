@@ -1,0 +1,87 @@
+name: 短歌を削除する
+
+on:
+  workflow_dispatch:
+    inputs:
+      search:
+        description: '削除したい短歌（本文の一部を入力。1首だけにヒットするよう絞り込んでください）'
+        required: true
+        type: string
+      confirm:
+        description: '「削除する」と入力して確認してください'
+        required: true
+        type: string
+
+jobs:
+  delete-tanka:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 短歌を削除
+        env:
+          SEARCH:  ${{ inputs.search }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          python3 - << 'EOF'
+          import json, os
+          from pathlib import Path
+
+          confirm = os.environ["CONFIRM"].strip()
+          if confirm != "削除する":
+              print("❌ 確認文字が一致しません。「削除する」と入力してください。")
+              exit(1)
+
+          with open("tanka.json", encoding="utf-8") as f:
+              data = json.load(f)
+
+          search = os.environ["SEARCH"].strip()
+
+          # ヒット数を確認
+          hits = [(i, t) for i, t in enumerate(data) if search in t.get("text", "")]
+
+          if len(hits) == 0:
+              print(f"❌ 該当する短歌が見つかりませんでした。")
+              print(f"   検索文字列: {search}")
+              exit(1)
+
+          if len(hits) > 1:
+              print(f"❌ {len(hits)}首ヒットしました。誤削除を防ぐため中止します。")
+              print(f"   以下の中から削除したい首をより具体的に指定してください。")
+              print()
+              for i, t in hits:
+                  print(f"  [{i:04d}] {t['text']}")
+              exit(1)
+
+          idx, removed = hits[0]
+          print(f"削除対象（1首のみ確認）: [{idx:04d}] {removed['text']}")
+
+          data.pop(idx)
+
+          with open("tanka.json", "w", encoding="utf-8") as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+
+          # notes/ の対応mdを削除
+          notes_dir = Path("notes")
+          if notes_dir.exists():
+              for md_file in sorted(notes_dir.glob("*.md")):
+                  stem = md_file.stem
+                  parts = stem.rsplit("_", 1)
+                  if len(parts) == 2 and parts[1].isdigit() and int(parts[1]) == idx:
+                      md_file.unlink()
+                      print(f"md削除: {md_file}")
+                      break
+
+          print(f"✅ 削除完了: {removed['text']}")
+          EOF
+
+      - name: commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tanka.json notes/
+          git diff --staged --quiet || git commit -m "短歌を削除: ${{ inputs.search }}"
+          git push
