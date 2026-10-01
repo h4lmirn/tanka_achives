@@ -339,7 +339,9 @@ main {
   color: var(--ink-faint);
   padding-top: .7rem;
   font-variant-numeric: lining-nums tabular-nums;
+  transition: color .4s;
 }
+.tanka:hover .tanka-no { color: var(--accent); }
 
 .tanka-text {
   font-size: clamp(1.2rem, 2.7vw, 1.6rem);
