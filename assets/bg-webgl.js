@@ -74,7 +74,7 @@
     vec2 w1 = vec2(fbm(q + vec2(0.0, t)), fbm(q + vec2(5.2, 1.3) - t * 0.8));
     vec2 w2 = vec2(fbm(q + 1.15 * w1 + vec2(1.7, 9.2) + t * 0.5), fbm(q + 1.15 * w1 + vec2(8.3, 2.8) - t * 0.45));
     float h = fbm(q + 1.0 * w2);
-    float amp = 0.0035 + min(abs(uVel), 1.5) * 0.009;
+    float amp = 0.0035 + min(abs(uVel), 1.0) * 0.004;
     return h + sin(dot(q, vec2(7.0, 10.0)) * 1.7 + h * 9.0 - uTime * 0.5) * amp;
   }
 
@@ -83,9 +83,13 @@
     float aspect = uRes.x / uRes.y;
     vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
 
-    float t = uTime * 0.04 + uScroll * 0.14;
-    // position: the pool drifts up with the page, slower than the text
-    vec2 q = p * 0.48 + vec2(0.0, uScroll * 0.26);
+    // Scroll nudges the flow's time only a little, so the surface doesn't
+    // start churning whenever the page moves.
+    float t = uTime * 0.04 + uScroll * 0.035;
+    // Position: the pool drifts the SAME way as the text, at 18% of its speed
+    // (a far layer). Opposite or faster motion here causes motion sickness.
+    const float ZOOM = 0.48;
+    vec2 q = p * ZOOM - vec2(0.0, uScroll * ZOOM * 0.18);
 
     // three height samples -> smooth analytic-looking normal at any resolution
     const float E = 0.0035;
@@ -178,19 +182,25 @@
   addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(resize, 150); }, { passive: true });
 
   // Scroll: smoothed so the liquid lags behind like something heavy.
-  let target = scrollY / innerHeight, cur = target, vel = 0;
-  addEventListener('scroll', () => { target = scrollY / innerHeight; }, { passive: true });
+  // Scroll unit is fixed per width: on phones innerHeight changes as the
+  // address bar slides, which would make the liquid jump.
+  let unit = innerHeight, unitW = innerWidth;
+  addEventListener('resize', () => {
+    if (innerWidth !== unitW) { unit = innerHeight; unitW = innerWidth; target = cur = scrollY / unit; }
+  }, { passive: true });
+  let target = scrollY / unit, cur = target, vel = 0;
+  addEventListener('scroll', () => { target = scrollY / unit; }, { passive: true });
 
   const start = performance.now();
   let raf = 0, last = 0, shown = false;
-  const minDt = coarse ? 1000 / 30 : 0;
   let slow = 0, frames = 0;
 
   function draw(now) {
     const dt = Math.min(0.1, (now - (last || now)) / 1000);
     last = now;
     const prev = cur;
-    cur += (target - cur) * (1 - Math.exp(-dt * 3.2));
+    // short lag: the liquid settles ~0.15s after the page stops
+    cur += (target - cur) * (1 - Math.exp(-dt * 7.0));
     const v = dt > 0 ? (cur - prev) / dt : 0;
     vel += (v - vel) * (1 - Math.exp(-dt * 4));
     const s = (now - start) / 1000;
@@ -205,12 +215,12 @@
   let prevTick = 0;
   function loop(now) {
     raf = requestAnimationFrame(loop);
-    if (minDt && now - prevTick < minDt - 2) return;
-    // adaptive quality: if frames stay slow, drop the buffer resolution once or twice
+    // Full frame rate everywhere: a 30fps background next to smoothly
+    // scrolling text judders. Slow devices drop resolution instead.
     if (prevTick) {
       const ft = now - prevTick;
       frames++;
-      if (ft > (minDt || 16.7) * 1.6) slow++;
+      if (ft > 16.7 * 1.6) slow++;
       if (frames === 90) {
         if (slow > 45 && budget > 60000) { budget *= 0.6; resize(); }
         frames = slow = 0;
