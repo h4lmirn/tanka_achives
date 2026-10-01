@@ -240,20 +240,25 @@ a { color: inherit; }
 }
 
 .filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .4rem .5rem;
   border: 0;
+  min-width: 0;
+  flex: 1;
 }
 .filters legend {
   float: left;
-  margin-right: .5rem;
-  padding-top: .35rem;
+  width: 5.5rem;
+  padding-top: .45rem;
   font-family: var(--roman);
   font-size: .72rem;
   letter-spacing: .3em;
   text-transform: uppercase;
   color: var(--ink-faint);
+}
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem .5rem;
+  overflow: hidden; /* sits beside the floated legend as its own column */
 }
 
 .pill {
@@ -458,6 +463,20 @@ footer a:hover { color: var(--ink); }
   .tanka-no { padding: 0 0 .6rem; }
   .tanka-meta { grid-column: 1; }
   .controls-row { flex-direction: column; }
+  .filters { width: 100%; }
+  .filters legend { float: none; padding: 0 0 .7rem; }
+  /* one swipeable row instead of a wall of pills */
+  .pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0 calc(var(--gutter) * -1);
+    padding: 0 var(--gutter) .25rem;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - 40px), transparent);
+            mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - 40px), transparent);
+  }
+  .pills::-webkit-scrollbar { display: none; }
+  .pill { flex: none; }
   .rail { display: none; }
 }
 
