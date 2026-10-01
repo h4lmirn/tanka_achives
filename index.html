@@ -18,12 +18,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
-<!--BG-HEAD-->
+<style>
+  .liquid { position: absolute; inset: 0; width: 100%; height: 100lvh; opacity: 0; transition: opacity 1.6s ease; }
+  .liquid.is-on { opacity: 1; }
+</style>
 </head>
 <body>
 <a class="skip" href="#list">歌の一覧へ移動</a>
 
-<div class="stage" aria-hidden="true"><!--BG-STAGE--></div>
+<div class="stage" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 <div class="rail" aria-hidden="true"><i></i></div>
 
@@ -76,6 +79,6 @@
 
 <script src="assets/spiral.js"></script>
 <script src="assets/app.js"></script>
-<!--BG-SCRIPT-->
+<script src="assets/bg-webgl.js"></script>
 </body>
 </html>
