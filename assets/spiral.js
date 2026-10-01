@@ -86,11 +86,15 @@
       for (const e of entries) if (e.isIntersecting) { split(e.target); prepIO.unobserve(e.target); }
     }, { rootMargin: '0px 0px 60% 0px' });
     playIO = new IntersectionObserver((entries) => {
+      let n = 0;
       for (const e of entries) {
         if (!e.isIntersecting) continue;
         split(e.target);
-        play(e.target);
         playIO.unobserve(e.target);
+        // poems arriving together start one after another, not in unison
+        const el = e.target;
+        if (n === 0) play(el); else setTimeout(() => play(el), n * 140);
+        n++;
       }
     }, { rootMargin: '0px 0px -10% 0px' });
   }
@@ -122,5 +126,10 @@
     document.querySelectorAll('.spiral').forEach(finish);
   });
 
-  window.Spiral = { observe, release };
+    // Put an element in its resting pose now; observe() later starts it.
+  function prepare(el) {
+    if (!reduce.matches && 'IntersectionObserver' in window) split(el);
+  }
+
+  window.Spiral = { observe, release, prepare };
 })();

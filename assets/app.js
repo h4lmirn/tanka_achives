@@ -112,8 +112,11 @@
   searchEl.addEventListener('input', () => { clearTimeout(typing); typing = setTimeout(render, 120); });
   sortEl.addEventListener('change', render);
 
-  // Title reveal on first load
-  window.Spiral.observe([$('heroTitle')]);
+  // Title reveal on first load, once the webfont is in (no fallback-font flash)
+  const title = $('heroTitle');
+  window.Spiral.prepare(title);
+  (document.fonts ? Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1200))]) : Promise.resolve())
+    .then(() => window.Spiral.observe([title]));
 
   // Scroll rail (transform only)
   const rail = document.querySelector('.rail i');

@@ -121,7 +121,8 @@ a { color: inherit; }
   grid-row: 2;
   align-self: center;
   writing-mode: vertical-rl;
-  font-size: clamp(3rem, 11vw, 7.25rem);
+  font-size: clamp(2.6rem, min(11vw, 12.5svh), 7.25rem);
+  white-space: nowrap;
   font-weight: 500;
   letter-spacing: .28em;
   line-height: 1;
